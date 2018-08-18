@@ -41,10 +41,8 @@ export default {
     login () {
       this.$refs.form.validate(v => {
         if (v) {
-          this.axios.post('login', {
-            username: this.form.username,
-            password: this.form.password
-          }).then(res => {
+          this.axios.post('login', this.form).then(res => {
+            console.log(res)
             if (res.data.meta.status === 200) {
               this.$message({
                 message: '恭喜你，这是一条成功消息',

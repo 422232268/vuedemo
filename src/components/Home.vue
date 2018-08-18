@@ -6,21 +6,19 @@
           menu-trigger
           router
           unique-opened
-          default-active=""
+          default-active="$route.path.slice(1)"
           class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
           background-color="#545c64"
           text-color="#fff"
           active-text-color="#ffd04b">
-          <el-submenu index="1">
+          <el-submenu :index="l1.path" v-for="l1 in menuList" :key="l1.id">
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{l1.authName}}</span>
             </template>
-              <el-menu-item index="/users">
+              <el-menu-item :index="l2.path" v-for="l2 in l1.children" :key="l2.id">
                 <i class="el-icon-menu"></i>
-                <span slot="title">用户列表</span>
+                <span slot="title">{{l2.authName}}</span>
               </el-menu-item>
           </el-submenu>
           <el-submenu index="2">
@@ -65,32 +63,44 @@
 
 <script>
 export default {
+  data () {
+    return {
+      menuList: []
+    }
+  },
   methods: {
-    handleOpen (key, keyPath) {
-      console.log(key, keyPath)
-    },
-    handleClose (key, keyPath) {
-      console.log(key, keyPath)
-    },
-    logout () {
-      this.$confirm('你确定要退出系统吗?', '温馨提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
+    async logout () {
+      try {
+        await this.$confirm('你确定要退出系统吗?', '温馨提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
         // 1. 删除localStorage中的myToken
         localStorage.removeItem('myToken')
         // 2. 跳转到登录组件
         this.$router.push('login')
         // 3. 给一个退出的提示
         this.$message.success('退出成功了')
-      }).catch(() => {
+      } catch (e) {
         this.$message({
           type: 'info',
           message: '退出取消了'
         })
-      })
+      }
+    },
+    async getMenuList () {
+      // 发送ajax请求，获取菜单数据
+      const res = await this.axios.get('menus')
+      const { meta, data } = res.data
+      if (meta.status === 200) {
+        this.menuList = data
+        // console.log(this.menuList)
+      }
     }
+  },
+  created () {
+    this.getMenuList()
   }
 }
 </script>
